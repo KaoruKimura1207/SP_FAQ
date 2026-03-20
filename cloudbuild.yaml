@@ -1,0 +1,35 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/sp-faq/sp-faq:$COMMIT_SHA'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/sp-faq/sp-faq:$COMMIT_SHA'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'sp-faq'
+      - '--image=asia-northeast1-docker.pkg.dev/$PROJECT_ID/sp-faq/sp-faq:$COMMIT_SHA'
+      - '--region=asia-northeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--service-account=sp-faq-runner@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=3'
+      - '--port=8080'
+
+images:
+  - 'asia-northeast1-docker.pkg.dev/$PROJECT_ID/sp-faq/sp-faq:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
